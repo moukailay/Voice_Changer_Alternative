@@ -64,5 +64,5 @@ Une barre de progression pour l'enregistrement et l'upload.
   Configurer les événements pour les boutons :
   
   Chaque bouton doit être connecté à une fonction.
-  Vous ajouterez ces fonctions ultérieurement pour gérer l'enregistrement, la lecture, etc.
+  
   
