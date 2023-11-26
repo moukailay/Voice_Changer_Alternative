@@ -100,7 +100,7 @@ class VoiceRecorderUI(QWidget):
     def onUpload(self):
         self.messageLabel.setText("Upload en cours...")
 
-        # Remplacer par l'URL de votre API ou service d'upload
+        # A remplacer par l'URL de notre API ou service d'upload
         url = "http://monapi.com/upload"
         files = {'file': open('enregistrement.wav', 'rb')}
 
