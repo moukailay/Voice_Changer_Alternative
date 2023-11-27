@@ -1,8 +1,8 @@
 import wave
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QProgressBar
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QLabel, QProgressBar
 from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QColor
 
 class VoiceRecorderUI(QWidget):
     def __init__(self):
@@ -19,7 +19,7 @@ class VoiceRecorderUI(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.layout = QVBoxLayout()
+        self.layout = QHBoxLayout()
 
         # Initialisation des Boutons
         self.recordButton = QPushButton("Enregistrer")
@@ -27,6 +27,13 @@ class VoiceRecorderUI(QWidget):
         self.playButton = QPushButton("Jouer")
         self.uploadButton = QPushButton("Uploader")
         self.downloadButton = QPushButton("Télécharger")
+
+        # Personnalisation des boutons
+        self.recordButton.setStyleSheet("background-color: #4CAF50; color: white; font-size: 16px; padding: 10px;")
+        self.stopButton.setStyleSheet("background-color: #f44336; color: white; font-size: 16px; padding: 10px;")
+        self.playButton.setStyleSheet("background-color: #2196F3; color: white; font-size: 16px; padding: 10px;")
+        self.uploadButton.setStyleSheet("background-color: #FF9800; color: white; font-size: 16px; padding: 10px;")
+        self.downloadButton.setStyleSheet("background-color: #9C27B0; color: white; font-size: 16px; padding: 10px;")
 
         # Initialisation du Label et ProgressBar
         self.messageLabel = QLabel("Prêt à enregistrer")
@@ -124,8 +131,10 @@ class VoiceRecorderUI(QWidget):
             self.messageLabel.setText("Téléchargement réussi")
         else:
             self.messageLabel.setText("Erreur de téléchargement")
+
 if __name__ == '__main__':
     app = QApplication([])
     ex = VoiceRecorderUI()
+    ex.setStyleSheet("background-color: #F2F2F2;")
     ex.show()
     app.exec_()
