@@ -19,10 +19,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.rate_input = QtWidgets.QLineEdit(self)
         self.rate_input.setText("44100")
 
-        # contrôles pour interagir avec ElevenLabsAPI
-        self.text_to_synthesize = QtWidgets.QTextEdit(self)
-        self.synthesize_button = QtWidgets.QPushButton("Synthétiser", self)
-        self.synthesize_button.clicked.connect(self.synthesize_speech)
 
     def init_ui(self):
         self.setWindowTitle("Enregistreur vocal")
