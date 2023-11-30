@@ -1,140 +1,131 @@
-import wave
-import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QLabel, QProgressBar
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QIcon, QColor
+# user_interface.py
 
-class VoiceRecorderUI(QWidget):
+from PyQt5 import QtWidgets
+from voice_recorder import VoiceRecorder
+from evenlabs_api import ElevenLabsAPI
+
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        # Déclaration des attributs
-        self.recordButton = None
-        self.stopButton = None
-        self.playButton = None
-        self.uploadButton = None
-        self.downloadButton = None
-        self.messageLabel = None
-        self.progressBar = None
+        self.recorder = VoiceRecorder()
+        self.init_ui()
+        self.elevenlabs_api = ElevenLabsAPI("9e2b57ba0bd6f9835009f410e69189bd")
+        self.load_voices()
+        self.voice_combo = QtWidgets.QComboBox(self)
 
-        self.initUI()
 
-    def initUI(self):
-        self.layout = QHBoxLayout()
+        # contrôles pour les paramètres audio
+        self.rate_label = QtWidgets.QLabel("Taux d'échantillonnage: 44100 Hz", self)
+        self.rate_input = QtWidgets.QLineEdit(self)
+        self.rate_input.setText("44100")
 
-        # Initialisation des Boutons
-        self.recordButton = QPushButton("Enregistrer")
-        self.stopButton = QPushButton("Arrêter")
-        self.playButton = QPushButton("Jouer")
-        self.uploadButton = QPushButton("Uploader")
-        self.downloadButton = QPushButton("Télécharger")
+        # contrôles pour interagir avec ElevenLabsAPI
+        self.text_to_synthesize = QtWidgets.QTextEdit(self)
+        self.synthesize_button = QtWidgets.QPushButton("Synthétiser", self)
+        self.synthesize_button.clicked.connect(self.synthesize_speech)
 
-        # Personnalisation des boutons
-        self.recordButton.setStyleSheet("background-color: #4CAF50; color: white; font-size: 16px; padding: 10px;")
-        self.stopButton.setStyleSheet("background-color: #f44336; color: white; font-size: 16px; padding: 10px;")
-        self.playButton.setStyleSheet("background-color: #2196F3; color: white; font-size: 16px; padding: 10px;")
-        self.uploadButton.setStyleSheet("background-color: #FF9800; color: white; font-size: 16px; padding: 10px;")
-        self.downloadButton.setStyleSheet("background-color: #9C27B0; color: white; font-size: 16px; padding: 10px;")
+    def init_ui(self):
+        self.setWindowTitle("Enregistreur vocal")
+        self.setGeometry(100, 100, 400, 200)
 
-        # Initialisation du Label et ProgressBar
-        self.messageLabel = QLabel("Prêt à enregistrer")
-        self.progressBar = QProgressBar()
+        self.text_to_synthesize = QtWidgets.QTextEdit(self)
+        self.text_to_synthesize.move(20, 60)
+        self.text_to_synthesize.resize(200, 100)
 
-        # Ajouter les widgets au layout
-        self.layout.addWidget(self.recordButton)
-        self.layout.addWidget(self.stopButton)
-        self.layout.addWidget(self.playButton)
-        self.layout.addWidget(self.uploadButton)
-        self.layout.addWidget(self.downloadButton)
-        self.layout.addWidget(self.messageLabel)
-        self.layout.addWidget(self.progressBar)
+        self.synthesize_button = QtWidgets.QPushButton('Synthétiser', self)
+        self.synthesize_button.move(230, 60)
+        self.synthesize_button.clicked.connect(self.synthesize_speech)
 
-        self.setLayout(self.layout)
+        self.voice_combo = QtWidgets.QComboBox(self)
+        self.voice_combo.move(230, 100)
+        self.voice_combo.resize(200, 30)
 
-        # Connecter les boutons à leurs fonctions
-        self.recordButton.clicked.connect(self.onRecord)
-        self.stopButton.clicked.connect(self.onStop)
-        self.playButton.clicked.connect(self.onPlay)
-        self.uploadButton.clicked.connect(self.onUpload)
-        self.downloadButton.clicked.connect(self.onDownload)
+        self.stop_button = QtWidgets.QPushButton('Arrêter', self)
+        self.stop_button.clicked.connect(self.stop_recording)
+        self.stop_button.move(150, 20)
 
-    def onRecord(self):
-        self.isRecording = True
-        self.messageLabel.setText("Enregistrement en cours...")
+        self.play_button = QtWidgets.QPushButton('Jouer', self)
+        self.play_button.clicked.connect(self.play_sound)
+        self.play_button.move(280, 20)
 
-        self.stream = self.pyaudio.open(format=self.format, channels=self.channels,
-                                        rate=self.rate, input=True,
-                                        frames_per_buffer=self.chunk_size)
-        self.frames = []
+        # Ajoutez un ComboBox pour sélectionner l'API hôte
+        self.api_combo = QtWidgets.QComboBox(self)
+        self.api_combo.move(230, 140)
+        self.api_combo.resize(200, 30)
+        self.api_combo.addItems(
+        self.recorder.get_audio_apis())  # Supposons que cette méthode retourne une liste des API hôtes disponibles
+        self.api_combo.currentIndexChanged.connect(
+        self.update_audio_host)  # Connectez le signal à la méthode appropriée
 
-        while self.isRecording:
-            data = self.stream.read(self.chunk_size)
-            self.frames.append(data)
+        devices = self.recorder.get_audio_devices()
+        if devices:  # Ajoutez cette vérification pour vous assurer que devices n'est pas None
+            for device in devices:
+                self.input_combo.addItem(device['name'], device['index'])
+                self.output_combo.addItem(device['name'], device['index'])
 
-    def onStop(self):
-        self.isRecording = False
-        self.messageLabel.setText("Enregistrement arrêté")
+        # Ajoutez des ComboBox pour les périphériques d'entrée et de sortie
+        self.input_combo = QtWidgets.QComboBox(self)
+        self.input_combo.move(230, 180)
+        self.input_combo.resize(200, 30)
+        self.output_combo = QtWidgets.QComboBox(self)
+        self.output_combo.move(230, 220)
+        self.output_combo.resize(200, 30)
 
-        self.stream.stop_stream()
-        self.stream.close()
+        # Populez les ComboBox avec les périphériques audio disponibles
+        devices = self.recorder.get_audio_devices()
+        for device in devices:
+            self.input_combo.addItem(device['name'], device['index'])
+            self.output_combo.addItem(device['name'], device['index'])
 
-        self.pyaudio.terminate()
+    def update_audio_host(self):
+        # Mettez à jour l'API hôte en fonction de la sélection de l'utilisateur
+        selected_api = self.api_combo.currentText()
+        self.recorder.set_audio_host_api(selected_api)
 
-        # Sauvegarde de l'enregistrement dans un fichier
-        with wave.open('enregistrement.wav', 'wb') as wf:
-            wf.setnchannels(self.channels)
-            wf.setsampwidth(self.pyaudio.get_sample_size(self.format))
-            wf.setframerate(self.rate)
-            wf.writeframes(b''.join(self.frames))
+    def update_audio_devices(self):
+        # Mettez à jour les périphériques d'entrée et de sortie en fonction de la sélection de l'utilisateur
+        input_device_id = self.input_combo.currentData()
+        output_device_id = self.output_combo.currentData()
+        self.recorder.set_input_device(input_device_id)
+        self.recorder.set_output_device(output_device_id)
 
-    def onPlay(self):
-        self.messageLabel.setText("Lecture de l'enregistrement")
+    def synthesize_speech(self):
+        text = self.text_to_synthesize.toPlainText()
+        voice_id = self.voice_combo.currentData()  # Récupérer l'ID de la voix sélectionnée
+        resultat = self.elevenlabs_api.synthesize_speech(text, voice_id)
+        print(resultat)
 
-        # Jouer le fichier 'enregistrement.wav'
-        with wave.open('enregistrement.wav', 'rb') as wf:
-            stream = self.pyaudio.open(format=self.pyaudio.get_format_from_width(wf.getsampwidth()),
-                                       channels=wf.getnchannels(),
-                                       rate=wf.getframerate(),
-                                       output=True)
+    def load_voices(self):
+        voices = self.elevenlabs_api.get_available_voices()
+        for voice in voices:
+            voice_id = voice.get('voice_id')
+            if voice_id is not None:
+                self.voice_combo.addItem(voice['description'], voice_id)
+            else:
+                print("Voice ID missing for", voice)
 
-            data = wf.readframes(self.chunk_size)
-            while data:
-                stream.write(data)
-                data = wf.readframes(self.chunk_size)
 
-            stream.stop_stream()
-            stream.close()
+    def start_recording(self):
+        # Mettez à jour les périphériques sélectionnés
+        self.update_audio_devices()
+        self.recorder.start_server()
 
-    def onUpload(self):
-        self.messageLabel.setText("Upload en cours...")
+        # Démarrer le serveur audio
+        self.recorder.start_server()
+        # Commencer l'enregistrement audio
+        self.recorder.start_recording()
 
-        # A remplacer par l'URL de notre API ou service d'upload
-        url = "http://monapi.com/upload"
-        files = {'file': open('enregistrement.wav', 'rb')}
+    def stop_recording(self):
+        # Arrêter l'enregistrement audio
+        self.recorder.stop_recording()
 
-        response = requests.post(url, files=files)
-
-        if response.status_code == 200:
-            self.messageLabel.setText("Upload réussi")
-        else:
-            self.messageLabel.setText("Erreur d'upload")
-
-    def onDownload(self):
-        self.messageLabel.setText("Téléchargement en cours...")
-
-        # TODO: Remplacer par l'URL du fichier à télécharger
-        url = "http://monapi.com/enregistrement.wav"
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            with open('enregistrement_telecharge.wav', 'wb') as f:
-                f.write(response.content)
-            self.messageLabel.setText("Téléchargement réussi")
-        else:
-            self.messageLabel.setText("Erreur de téléchargement")
+    def play_sound(self):
+        # Jouer l'audio enregistré
+        self.recorder.play_sound()
 
 if __name__ == '__main__':
-    app = QApplication([])
-    ex = VoiceRecorderUI()
-    ex.setStyleSheet("background-color: #F2F2F2;")
-    ex.show()
-    app.exec_()
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    main_win = MainWindow()
+    main_win.show()
+    sys.exit(app.exec_())

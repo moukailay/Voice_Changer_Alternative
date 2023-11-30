@@ -64,5 +64,7 @@ Une barre de progression pour l'enregistrement et l'upload.
   Configurer les événements pour les boutons :
   
   Chaque bouton doit être connecté à une fonction.
+
+installation de WxPython lien : https://wxpython.org/pages/downloads/index.html
   
   
