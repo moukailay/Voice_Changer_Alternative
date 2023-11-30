@@ -18,8 +18,8 @@ class VoiceRecorder:
         self.en_cours = False
         self.file_path = "enregistrement.wav"
 
-    def get_audio_apis(self):
-        # Exemple d'adaptation si pa_list_host_apis retourne une liste de dictionnaires
+    def  get_audio_apis(self):
+
         host_apis = pa_list_host_apis()
         if host_apis is not None:
             return [api_dict['name'] for api_dict in host_apis]

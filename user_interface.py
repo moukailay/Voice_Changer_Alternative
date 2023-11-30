@@ -78,12 +78,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.output_combo.addItem(device['name'], device['index'])
 
     def update_audio_host(self):
-        # Mettez à jour l'API hôte en fonction de la sélection de l'utilisateur
+
         selected_api = self.api_combo.currentText()
         self.recorder.set_audio_host_api(selected_api)
 
     def update_audio_devices(self):
-        # Mettez à jour les périphériques d'entrée et de sortie en fonction de la sélection de l'utilisateur
+
         input_device_id = self.input_combo.currentData()
         output_device_id = self.output_combo.currentData()
         self.recorder.set_input_device(input_device_id)
@@ -106,7 +106,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def start_recording(self):
-        # Mettez à jour les périphériques sélectionnés
+
         self.update_audio_devices()
         self.recorder.start_server()
 
