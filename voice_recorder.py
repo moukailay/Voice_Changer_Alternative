@@ -1,5 +1,4 @@
 # voice_recorder.py
-
 import os
 import time
 import wave
@@ -90,4 +89,4 @@ class VoiceRecorder:
 
     def run(self):
         self.server.gui(locals())
-        self.server.stop()
+        #self.server.stop()
