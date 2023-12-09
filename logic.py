@@ -7,10 +7,16 @@ from pydub.playback import play
 recordedSoundPath = 'outputs/output.wav'
 modifiedSoundPath = 'outputs/outputModified.wav'
 s = Server().boot()
-mic = Input(mul=0.5)
+mic = Input(mul=0.2)
 isRecording = False
 s.start()
 global modifiedSound
+
+
+def liveVoiceChanger(input_stream):
+    x = Harmonizer(input_stream, transpo=5)
+    x2 = Delay(x, delay=0.002, feedback=0.1)
+    return Biquad(x2, freq=40000, q=20000, type=0)   
 
 def playRecordedSound():
      audio = AudioSegment.from_file(recordedSoundPath, format="wav")
@@ -18,7 +24,7 @@ def playRecordedSound():
 
 def playModifiedSound():
     audio = AudioSegment.from_file(modifiedSoundPath, format="wav")
-    play(audio)
+    play(audio)    
     
 def recordSound(RecordingTime):
     print('Recording started')
@@ -33,29 +39,46 @@ def recordSound(RecordingTime):
     print('Record saved')
     
 # change voice pitch. Use values between ~0.5 to ~2.5
-def pitch(pitchValue):
-    global modifiedSound
-    audio = AudioSegment.from_file(recordedSoundPath, format="wav")
+def pitch(audio, pitchValue):
     new_frame_rate = int(audio.frame_rate * pitchValue)
     pitch_shifted_audio = audio._spawn(audio.raw_data, overrides={
     "frame_rate": new_frame_rate})
-    modifiedSound = pitch_shifted_audio
-    exportModifiedSound()
+    return pitch_shifted_audio
     
-def speed(speedValue):
-    global modifiedSound
-    audio = AudioSegment.from_file(recordedSoundPath, format="wav")
-    audio1 = audio.speedup(playback_speed=speedValue)
-    modifiedSound = audio1
+def speed(audio, speedValue):
+    return audio.speedup(playback_speed=speedValue) 
+
+def volume(audio, volumeValue):
+        return audio + volumeValue   
+
+def preset1(audio):
+    x = pitch(audio, 1.5)
+    x1 = speed(x, 1.7)
+    play(x1)
+    
+# sauvegarder le son
+def exportModifiedSound(audio):
     audio.export("outputs/outputModified.wav", format="wav")
 
+# Si il n'y a aucun son enregistrer enlever ca de commentaire
+# 3 = nombre de secondes
 
-def exportModifiedSound():
-    modifiedSound.export("outputs/outputModified.wav", format="wav")
-     
 #recordSound(3)
-#speed(4)
-#play(modifiedSound)
+
+sound = AudioSegment.from_file(recordedSoundPath, format="wav")
+
+# on affecte la valeur de return de la fonction pour pouvoir jouer le audio
+x = pitch(sound, 2)
+play(x)
+
+#preset1(sound)
+
+# live ->
+
+#x1 = liveVoiceChanger(mic)
+#x1.out()
+
+
 
 
 
