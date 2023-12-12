@@ -13,13 +13,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_voices()
         self.voice_combo = QtWidgets.QComboBox(self)
 
-
-        # contrôles pour les paramètres audio
-        self.rate_label = QtWidgets.QLabel("Taux d'échantillonnage: 44100 Hz", self)
-        self.rate_input = QtWidgets.QLineEdit(self)
-        self.rate_input.setText("44100")
-
-
     def init_ui(self):
         self.setWindowTitle("Enregistreur vocal")
         self.setGeometry(100, 100, 400, 200)
