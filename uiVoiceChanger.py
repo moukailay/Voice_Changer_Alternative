@@ -4,6 +4,7 @@ from time import sleep
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider
+from pydub import AudioSegment
 from pydub.playback import play
 from pyo import *
 
@@ -17,6 +18,14 @@ class VoiceChangerUI(QWidget):
         self.liveVoiceChanger = None
         self.initUI()
         self.initAudio()
+
+    def initServer(self):
+        try:
+            self.server = Server().boot()
+            self.server.start()
+        except Exception as e:
+            print("Erreur lors du démarrage du serveur audio:", e)
+            # Gérer l'erreur ou fermer l'application si nécessaire
 
     def initUI(self):
         self.setWindowTitle('Voice Changer')
@@ -98,15 +107,16 @@ class VoiceChangerUI(QWidget):
 
     def toggle_live(self):
         if self.live_btn.text() == 'Live Test':
+            self.liveVoiceChanger = liveVoiceChanger(self.mic)
             self.live_btn.setText('Stop')
             self.status_label.setText('Status: Live')
             self.status_icon.show()
-            thread = threading.Thread(target=self.liveVoiceChanger)
-            thread.start()
+            self.liveVoiceChanger.out()
         else:
             self.live_btn.setText('Live Test')
             self.status_label.setText('Status:')
             self.status_icon.hide()
+            self.liveVoiceChanger.stop()
 
     def toggle_record(self):
         if self.record_btn.text() == 'Record':
@@ -124,7 +134,8 @@ class VoiceChangerUI(QWidget):
         self.isRecording = True
         mic = Input(mul=1)
         recording = Record(mic, filename=self.recordedSoundPath, chnls=1)
-        sleep(3)  # Record for 3 seconds
+        # enregitrer pour 5 secondes
+        sleep(10)  # 10 secondes d'enregistrement
         recording.stop()
         self.isRecording = False
         print('Record saved')
@@ -142,8 +153,17 @@ class VoiceChangerUI(QWidget):
             self.status_icon.hide()
 
     def play_sound(self):
-        if self.sound is not None:
+        try:
+            if self.sound is None:
+                self.sound = AudioSegment.from_file(self.recordedSoundPath, format="wav")
+            self.sound = pitch(self.sound, self.pitch_slider.value() / 100.0)
+            self.sound = speed(self.sound, self.speed_slider.value() / 10.0)
+            self.sound = volume(self.sound, self.volume_slider.value())
             play(self.sound)
+        except Exception as e:
+            print("Erreur lors de la lecture du son:", e)
+            # Gérer l'erreur ou fermer l'application si nécessaire
+            self.status_label.setText('Status: Error')
 
     def update_pitch_value(self, value):
         self.pitch_value_label.setText(str(value))
