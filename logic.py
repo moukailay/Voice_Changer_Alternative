@@ -14,10 +14,10 @@ s.start()
 global modifiedSound
 
 
-def liveVoiceChanger(input_stream):
-    x = Harmonizer(input_stream, transpo=5)
-    x2 = Delay(x, delay=0.002, feedback=0.1)
-    return Biquad(x2, freq=40000, q=20000, type=0)
+def liveVoiceChanger(input_stream, pitch_val, delay_val, feedback_val, freq_val, q_val):
+    x = Harmonizer(input_stream, transpo=pitch_val)
+    x2 = Delay(x, delay=delay_val, feedback=feedback_val)
+    return Biquad(x2, freq=freq_val, q=q_val, type=0)
 
 def playRecordedSound():
      audio = AudioSegment.from_file(recordedSoundPath, format="wav")
