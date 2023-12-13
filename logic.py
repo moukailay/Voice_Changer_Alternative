@@ -4,10 +4,11 @@ import math
 from pydub import AudioSegment
 from pydub.playback import play
 
+
 recordedSoundPath = 'outputs/output.wav'
 modifiedSoundPath = 'outputs/outputModified.wav'
-s = Server().boot()
-mic = Input(mul=0.2)
+s = Server().boot() # On démarre le serveur
+mic = Input(mul=0.2) # On crée un objet Input pour récupérer le son du micro
 isRecording = False
 s.start()
 global modifiedSound
@@ -16,7 +17,7 @@ global modifiedSound
 def liveVoiceChanger(input_stream):
     x = Harmonizer(input_stream, transpo=5)
     x2 = Delay(x, delay=0.002, feedback=0.1)
-    return Biquad(x2, freq=40000, q=20000, type=0)   
+    return Biquad(x2, freq=40000, q=20000, type=0)
 
 def playRecordedSound():
      audio = AudioSegment.from_file(recordedSoundPath, format="wav")

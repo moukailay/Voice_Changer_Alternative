@@ -1,3 +1,47 @@
+# Premiere alternative du projet Voice_Changer
+
+# Résumé du Projet "logic.py"
+Ce projet est un script Python conçu pour la manipulation audio.
+Il intègre plusieurs fonctionnalités pour l'enregistrement, la modification et la lecture des sons.
+
+# Fonctionnalités Principales
+Enregistrement de sons : Permet la capture de sons et leur sauvegarde dans un fichier.
+Modification de l'audio : Inclut le changement de hauteur (pitch), de vitesse et de volume des sons enregistrés.
+Lecture de l'audio : Capacité à jouer les sons modifiés.
+Changement de voix en temps réel : Offre la possibilité d'alterer la voix durant l'enregistrement.
+
+# Flux de Travail
+Le son est d'abord enregistré et stocké.
+L'audio enregistré peut ensuite être modifié selon différents paramètres.
+Les sons modifiés sont disponibles pour la lecture ou peuvent être sauvegardés.
+
+# Technologies Utilisées
+
+  Pyo
+
+Bibliothèque Python pour le traitement audio numérique.
+Utilisée pour créer des effets sonores et manipuler des flux audio.
+
+  Pydub
+
+Bibliothèque Python pour la manipulation de fichiers audio.
+Permet des modifications audio telles que la modification de hauteur, de vitesse, et de volume.
+Python Standard Libraries
+
+  time: pour la gestion des délais.
+  math: pour les calculs nécessaires dans le traitement audio.
+
+# Utilité des Technologies
+
+Pyo : Essentiel pour le traitement audio en temps réel.
+Pydub : Simplifie la manipulation de fichiers audio.
+Librairies Python : Fournissent des fonctionnalités de base pour la gestion du temps et des calculs.
+Conclusion
+Ce projet offre un outil complet pour l'enregistrement, la modification et la lecture d'audio. 
+Il est adapté pour des applications variées telles que la création musicale, les podcasts, 
+et les effets sonores dans les jeux ou applications multimédia.
+
+# Deuxieme alternative du projet Voice_Changer
 # Voice_Changer_Alternative
 
 # Étape 1: Préparation de l'Environnement
