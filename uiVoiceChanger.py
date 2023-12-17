@@ -7,35 +7,27 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider, QListWidget
 from pydub import AudioSegment
 from pydub.playback import play
-from pyo import *
-
-from logic import pitch, speed, volume, exportModifiedSound, recordSound, playRecordedSound, playModifiedSound, \
-    liveVoiceChanger, preset1
+import sys
+import os
+#from pyo import *
+from logic2 import VoiceChanger
 
 
 class VoiceChangerUI(QWidget):
-    def __init__(self):
+    def __init__(self):  
         super().__init__()
         self.recordingsList = None
         self.liveVoiceChanger = None
         self.initUI()
-        self.initAudio()
-        self.initServer()
         self.load_recordings()
         self.pitch_val = 5
         self.delay_val = 0.002
         self.feedback_val = 0.1
         self.freq_val = 40000
         self.q_val = 20000
-
-
-    def initServer(self):
-        try:
-            self.server = Server().boot()
-            self.server.start()
-        except Exception as e:
-            print("Erreur lors du démarrage du serveur audio:", e)
-            # Gérer l'erreur ou fermer l'application si nécessaire
+        
+     
+    voiceChanger = VoiceChanger() 
 
     def initUI(self):
         self.setWindowTitle('Voice Changer')
@@ -64,9 +56,9 @@ class VoiceChangerUI(QWidget):
         self.pitch_slider = QSlider(Qt.Horizontal)
         self.speed_slider = QSlider(Qt.Horizontal)
         self.volume_slider = QSlider(Qt.Horizontal)
-        self.setupSlider(self.pitch_slider, -1200, 1200, 0, 100)  # de -12 à 12 (valeurs * 100 pour précision)
-        self.setupSlider(self.speed_slider, 0, 1000, 500, 50)  # de 0s à 1s pour le delay
-        self.setupSlider(self.volume_slider, 0, 100, 50, 10)  # de 0 à 1 pour le feedback
+        self.setupSlider(self.pitch_slider, -50, 250, 0, 100)  # de -12 à 12 (valeurs * 100 pour précision)
+        self.setupSlider(self.speed_slider, 50, 350, 100, 100)  # de 0s à 1s pour le delay
+        self.setupSlider(self.volume_slider, 0, 200, 100, 100)  # de 0 à 1 pour le feedback
 
         # Labels
 
@@ -186,50 +178,37 @@ class VoiceChangerUI(QWidget):
         layout.addLayout(hbox)
 
     def toggle_live(self):
-        if self.live_btn.text() == 'Live Test':
-            self.live_btn.setText('Stop')
-            self.status_label.setText('Status: Live')
-            self.status_icon.show()
-
-            # Utilisez les valeurs actuelles des sliders pour les effets en direct
-            threading.Thread(target=liveVoiceChanger, args=(
-                self.mic, self.pitch_val, self.speed_val, self.volume_val)).start()
-        else:
-            # Arrêtez le traitement audio en direct ici
-            self.live_btn.setText('Live Test')
-            self.status_label.setText('Status:')
-            self.status_icon.hide()
-
+            thread = threading.Thread(target=self.voiceChanger.liveVoiceChanger)
+            if self.live_btn.text() == 'Live Test':
+                self.voiceChanger.sleeping = True
+                print('abc')
+                self.live_btn.setText('Stop')
+                self.status_label.setText('Status: Live')
+                self.status_icon.show()
+                thread.start()
+                # Arrêtez le traitement audio en direct ici
+            else:
+                self.voiceChanger.sleeping = False
+                self.live_btn.setText('Live Test')
+                self.status_label.setText('Status:')
+                self.status_icon.hide()
+            
     def toggle_record(self):
+        
         if self.record_btn.text() == 'Record':
+            self.voiceChanger.recording = True
             self.record_btn.setText('Stop')
             self.status_label.setText('Status: Recording')
             self.status_icon.show()
-            thread = threading.Thread(target=self.record_sound)
+            thread = threading.Thread(target=self.voiceChanger.recordSound)
             thread.start()
         else:
+            self.voiceChanger.recording = False
             self.record_btn.setText('Record')
             self.status_label.setText('Status:')
             self.status_icon.hide()
-
-    def record_sound(self):
-        # Générer un nom de fichier unique
-        now = datetime.now()
-        unique_filename = f"outputs/recording_{now.strftime('%Y%m%d%H%M%S')}.wav"
-
-        # Enregistrement de l'audio
-        self.isRecording = True
-        mic = Input(mul=1)
-        recording = Record(mic, filename=unique_filename, chnls=1)
-        sleep(3)  # Record for 3 seconds
-        recording.stop()
-        self.isRecording = False
-        print('Record saved')
-
-
-        # Ajouter le nom de fichier à la liste
-        self.recordingsList.addItem(unique_filename)
-        self.save_recording_list(unique_filename)
+            self.recordingsList.addItem(self.voiceChanger.unique_filename)
+            self.save_recording_list(self.voiceChanger.unique_filename)
 
     def toggle_play(self):
         if self.play_btn.text() == 'Play':
@@ -294,6 +273,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = VoiceChangerUI()
     ex.show()
-    sys.exit(app.exec_())
 
 
