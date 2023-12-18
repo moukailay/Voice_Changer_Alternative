@@ -1,13 +1,11 @@
-import threading
-from datetime import datetime
-from time import sleep
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider, QListWidget
 from pydub import AudioSegment
 from pydub.playback import play
-import sys
-import os
+from pyo import *
+
+from logic import exportModifiedSound
 from logic2 import VoiceChanger
 
 
@@ -38,7 +36,7 @@ class VoiceChangerUI(QWidget):
 
 
         # Style de l'application
-        self.live_btn = QPushButton('Live Test', self)
+        self.live_btn = QPushButton('Live Test', self) # QPushbutton est un bouton cliquable dans PyQt5
         self.live_btn.setStyleSheet("background-color: #5D5D5D; border-radius: 10px; padding: 10px;")
         self.record_btn = QPushButton('Record', self)
         self.setStyleSheet("background-color: #282828; color: white; font-size: 16px;")
@@ -53,7 +51,7 @@ class VoiceChangerUI(QWidget):
         self.play_btn.setStyleSheet("background-color: light-gray ;border-radius: 10px; padding: 10px; font-size: 30px;")
 
         # Sliders
-        self.pitch_slider = QSlider(Qt.Horizontal)
+        self.pitch_slider = QSlider(Qt.Horizontal) # QSlider est un curseur horizontal dans PyQt5
         self.pitch_slider.setStyleSheet("QSlider::handle:horizontal {background-color: #FF5733;}")
         self.pitch_slider = QSlider(Qt.Horizontal)
         self.speed_slider = QSlider(Qt.Horizontal)
@@ -88,20 +86,20 @@ class VoiceChangerUI(QWidget):
         self.status_icon.hide()
 
         # Layouts
-        vbox = QVBoxLayout()
+        vbox = QVBoxLayout() # QVBoxLayout affiche les widgets de haut en bas
         self.addWidgetsToLayout(vbox, [self.live_btn, self.record_btn, self.play_btn])
         self.addSliderToLayout(vbox, self.pitch_label, self.pitch_slider, self.pitch_value_label)
         self.addSliderToLayout(vbox, self.speed_label, self.speed_slider, self.speed_value_label)
         self.addSliderToLayout(vbox, self.volume_label, self.volume_slider, self.volume_value_label)
         vbox.addWidget(self.save_btn)
-        hbox_status = QHBoxLayout()
+        hbox_status = QHBoxLayout() # QHBoxLayout affiche les widgets de gauche à droite
         hbox_status.addWidget(self.status_label)
         hbox_status.addWidget(self.status_icon)
         vbox.addLayout(hbox_status)
         self.setLayout(vbox)
 
         # Connect signals
-        self.live_btn.clicked.connect(self.toggle_live)
+        self.live_btn.clicked.connect(self.toggle_live) # connect() est une fonction de PyQt5 qui permet de connecter un signal à un slot autremement dit un bouton à une fonction
         self.record_btn.clicked.connect(self.toggle_record)
         self.play_btn.clicked.connect(self.toggle_play)
         self.save_btn.clicked.connect(self.save_audio)
@@ -110,7 +108,7 @@ class VoiceChangerUI(QWidget):
         self.volume_slider.valueChanged.connect(self.update_volume_value)
 
         # Liste des enregistrements
-        self.recordingsList = QListWidget(self)
+        self.recordingsList = QListWidget(self) # QListWidget est une liste de widgets dans PyQt5
         self.recordingsList.setStyleSheet("""
                     QListWidget {background-color: #282828; color: white;} 
                     QListWidget::item {border-bottom: 1px solid #505050;} 
