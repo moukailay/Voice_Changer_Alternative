@@ -1,7 +1,6 @@
 import threading
 from datetime import datetime
 from time import sleep
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider, QListWidget
@@ -9,7 +8,6 @@ from pydub import AudioSegment
 from pydub.playback import play
 import sys
 import os
-#from pyo import *
 from logic2 import VoiceChanger
 
 
@@ -28,7 +26,11 @@ class VoiceChangerUI(QWidget):
         
      
     voiceChanger = VoiceChanger() 
-
+    modifiedVoiceBool = False
+    global currAudio
+    global audioToExport
+    global prevAudio
+    
     def initUI(self):
         self.setWindowTitle('Voice Changer')
         self.setFixedSize(800, 600)
@@ -56,9 +58,9 @@ class VoiceChangerUI(QWidget):
         self.pitch_slider = QSlider(Qt.Horizontal)
         self.speed_slider = QSlider(Qt.Horizontal)
         self.volume_slider = QSlider(Qt.Horizontal)
-        self.setupSlider(self.pitch_slider, -50, 250, 0, 100)  # de -12 à 12 (valeurs * 100 pour précision)
-        self.setupSlider(self.speed_slider, 50, 350, 100, 100)  # de 0s à 1s pour le delay
-        self.setupSlider(self.volume_slider, 0, 200, 100, 100)  # de 0 à 1 pour le feedback
+        self.setupSlider(self.pitch_slider, 10, 250, 100, 100)  # de -12 à 12 (valeurs * 100 pour précision)
+        self.setupSlider(self.speed_slider, 101, 350, 101, 100)  # de 0s à 1s pour le delay
+        self.setupSlider(self.volume_slider, 100, 5000, 100, 100)  # de 0 à 1 pour le feedback
 
         # Labels
 
@@ -127,7 +129,7 @@ class VoiceChangerUI(QWidget):
         selected_item = self.recordingsList.currentItem()
         if selected_item:
             audio_path = selected_item.text()
-
+    
             # Suppression du fichier audio
             if os.path.exists(audio_path):
                 os.remove(audio_path)
@@ -223,24 +225,60 @@ class VoiceChangerUI(QWidget):
             self.status_icon.hide()
 
     def play_sound(self):
+        global currAudio
+        global audioToExport
         # Jouer l'audio sélectionné
+        if self.modifiedVoiceBool == False:
+            selected_item = self.recordingsList.currentItem()
+            if selected_item:
+                audio_path = selected_item.text()
+                self.sound = AudioSegment.from_file(audio_path)
+                play(self.sound)
+                self.play_btn.setText('Play')
+                self.status_label.setText('Status:')
+        else:
+            x1 = self.getSelectedItem()
+            pitchVal = (int(self.pitch_value_label.text())/100)
+            speedVal = (int(self.speed_value_label.text())/100)
+            volumeVal = (int(self.volume_value_label.text())/100)
+            
+            print(str(pitchVal)+ "pitch")
+            print(str(speedVal) + "speed")
+            print(str(volumeVal) + "volume")
+            
+            s =  self.voiceChanger.pitch(x1,pitchVal)
+            s1 = self.voiceChanger.speed(s,speedVal)
+            s2 = self.voiceChanger.volume(s1,volumeVal)
+            audioToExport = s2
+            play(s2)
+            
+            self.play_btn.setText('Play')
+            self.status_label.setText('Status:')      
+    
+    def getSelectedItem(self):
+        global modifiedVoice
+        global currAudio
         selected_item = self.recordingsList.currentItem()
         if selected_item:
-            audio_path = selected_item.text()
-            self.sound = AudioSegment.from_file(audio_path)
-            play(self.sound)
-
+            selected_item_file = AudioSegment.from_file(selected_item.text())
+            currAudio = selected_item_file
+            modifiedVoice = selected_item_file
+            return selected_item_file     
+    
     def update_pitch_value(self, value):
+        self.modifiedVoiceBool = True
         self.pitch_val = value / 100.0  # Ajuster l'échelle pour pitch
         self.pitch_value_label.setText(str(value))
         # Pas d'application directe à self.sound ici
 
     def update_speed_value(self, value):
+        self.modifiedVoiceBool = True
         self.speed_val = value / 10.0  # Ajuster l'échelle pour speed
         self.speed_value_label.setText(str(value))
         # Pas d'application directe à self.sound ici
 
     def update_volume_value(self, value):
+        self.modifiedVoiceBool = True
         self.volume_val = value  # Ajuster l'échelle pour volume
         self.volume_value_label.setText(str(value))
         # Pas d'application directe à self.sound ici
@@ -251,7 +289,7 @@ class VoiceChangerUI(QWidget):
             self.status_label.setText('Status: Saved')
 
     # Audio manipulation functions
-    def pitch(audio, pitchValue):
+    def pitch(self,audio, pitchValue):
         new_frame_rate = int(audio.frame_rate * (pitchValue / 100.0))
         return audio._spawn(audio.raw_data, overrides={"frame_rate": new_frame_rate})
 

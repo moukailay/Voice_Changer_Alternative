@@ -25,13 +25,12 @@ class VoiceChanger:
         x.out()
     # Fonction pour changer la voix en temps réel
     def liveVoiceChanger(self):
-        print('abcc')
         x = Harmonizer(self.mic, transpo=5)  # Harmoniseur pour modifier le ton
         x2 = Delay(x, delay=0.002, feedback=0.1)  # Délai pour ajouter un effet d'écho
         x3 = Biquad(x2, freq=40000, q=20000, type=0)
         x3.out()
         while self.sleeping:
-            sleep(0.5)# Filtre Biquad pour modifier le timbre
+            sleep(0.5)
 
 
     # Fonction pour jouer le son enregistré
@@ -61,11 +60,10 @@ class VoiceChanger:
 
     # Fonction pour modifier le ton du son
     def pitch(self, audio, pitchValue):
-        new_frame_rate = int(audio.frame_rate * pitchValue)  # Calcul du nouveau taux d'échantillonnage
-        pitch_shifted_audio = audio._spawn(audio.raw_data, overrides={
-            "frame_rate": new_frame_rate})  # Modification du son avec le nouveau taux
-        return pitch_shifted_audio  # Retour du son modifié
-
+            new_frame_rate = int(audio.frame_rate * pitchValue)  # Calcul du nouveau taux d'échantillonnage
+            pitch_shifted_audio = audio._spawn(audio.raw_data, overrides={
+                "frame_rate": new_frame_rate})  # Modification du son avec le nouveau taux
+            return pitch_shifted_audio  # Retour du son modifié
 
     # Fonction pour changer la vitesse du son
     def speed(self,audio, speedValue):
@@ -74,7 +72,7 @@ class VoiceChanger:
 
     # Fonction pour changer le volume du son
     def volume(self,audio, volumeValue):
-        return audio + volumeValue  # Augmentation ou diminution du volume
+            return audio + volumeValue# Augmentation ou diminution du volume
 
 
     # Preset pour appliquer une série de modifications sur le son

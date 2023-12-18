@@ -3,6 +3,7 @@ from time import sleep
 import math
 from pydub import AudioSegment
 from pydub.playback import play
+from pydub.effects import speedup
 
 
 recordedSoundPath = 'outputs/output.wav'
@@ -41,13 +42,15 @@ def recordSound(RecordingTime):
     
 # change voice pitch. Use values between ~0.5 to ~2.5
 def pitch(audio, pitchValue):
-    new_frame_rate = int(audio.frame_rate * pitchValue)
-    pitch_shifted_audio = audio._spawn(audio.raw_data, overrides={
-    "frame_rate": new_frame_rate})
-    return pitch_shifted_audio
+    if pitchValue > 0:
+        new_frame_rate = int(audio.frame_rate * pitchValue)
+        pitch_shifted_audio = audio._spawn(audio.raw_data, overrides={
+        "frame_rate": new_frame_rate})
+        return pitch_shifted_audio
+    return audio
     
 def speed(audio, speedValue):
-    return audio.speedup(playback_speed=speedValue) 
+    return speedup(audio,speedValue,150)
 
 def volume(audio, volumeValue):
         return audio + volumeValue   
@@ -67,9 +70,8 @@ def exportModifiedSound(audio):
 #recordSound(3)
 
 sound = AudioSegment.from_file(recordedSoundPath, format="wav")
-
 # on affecte la valeur de return de la fonction pour pouvoir jouer le audio
-x = pitch(sound, 2)
+x = speed(sound,5)
 play(x)
 
 #preset1(sound)
